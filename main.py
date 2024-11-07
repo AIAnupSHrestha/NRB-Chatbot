@@ -5,14 +5,14 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-from langchain_cohere import ChatCohere
-from langchain_cohere import CohereEmbeddings
+# from langchain_cohere import ChatCohere
+# from langchain_cohere import CohereEmbeddings
 from typing import Optional, List
 import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-import cohere                                                                                                                                                                                                                                                           
+# import cohere                                                                                                                                                                                                                                                           
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -26,35 +26,49 @@ class SimpleRAGPipeline:
         Args:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
             openai_api_key: OpenAI API key. If not provided, will look for OPENAI_API_KEY in environment.
         """
-        load_dotenv()
+        # load_dotenv()
         #self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
         # if not self.openai_api_key:
         #     raise ValueError("OpenAI API key must be provided or set in environment as OPENAI_API_KEY")
                                                                                                                                                 
         # Initialize components
-        self.embeddings = CohereEmbeddings(model="embed-english-light-v3.0")
+        self.embeddings = OpenAIEmbeddings()
         self.vector_store = None
         self.qa_chain = None
         
         # Default chunk settings
-        self.chunk_size = 1000
-        self.chunk_overlap = 200
+        self.chunk_size = 500
+        self.chunk_overlap = 50
         
         # Initialize text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
-            length_function=len,
+            # length_function=len,
         )
         
         # Default prompt template
-        self.default_template = """Use the following pieces of context to answer the question at the end. 
-        If you don't know the answer, just say that you don't know, don't try to make up an answer.
+        self.default_template = """"
+        You are an expert chatbot capable of understanding and analyzing diverse topics and documents, such as technical papers, historical texts, scientific literature, and general knowledge.
+        Don't give very long answer. Keep the response concise and clear as well.
+
+        Use the provided context pieces to construct a precise, accurate, and well-structured response to the question at the end. Always ensure the following guidelines:
+
+        1. **Focus on Accuracy**: Base your answer strictly on the given context. If the context does not directly provide an answer, say "I don’t know based on the given information" rather than speculating.
         
+        2. **Add Structure and Clarity**: Use numbered points, paragraphs, or headings if helpful to break down complex answers. Summarize key insights clearly.
+
+        3. **Demonstrate Depth and Expertise**: Provide background information, examples, or definitions relevant to the question to show expertise. If the context refers to specific terminology, historical events, or scientific concepts, incorporate brief explanations as needed.
+
+        4. **Maintain Neutrality and Professional Tone**: Answer factually without personal opinions. If there is conflicting information in the context, present the differing viewpoints accurately.
+
+        5. **Acknowledge Gaps**: If relevant context appears incomplete, indicate any assumptions or limitations in the information provided.
+
         {context}
-        
+
         Question: {question}
-        Answer: """
+        Answer:
+        """
         
         self.prompt = PromptTemplate(
             template=self.default_template,
@@ -83,7 +97,7 @@ class SimpleRAGPipeline:
             self.text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=chunk_size or self.chunk_size,
                 chunk_overlap=chunk_overlap or self.chunk_overlap,
-                length_function=len,
+                # length_function=len,
             )
             
         print(f"Loading PDF from {pdf_path}...")
